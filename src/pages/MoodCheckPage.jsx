@@ -175,7 +175,7 @@ export default function MoodCheckPage() {
     const token = localStorage.getItem('aura_token');
     if (token) {
       try {
-        await fetch('http://127.0.0.1:5001/api/history', {
+        await fetch('https://mindspace-backend-4ogv.onrender.com/api/history', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',

@@ -38,7 +38,7 @@ export default function DashboardPage() {
       const token = localStorage.getItem('aura_token');
       if (!token) return;
       try {
-        const response = await fetch('http://127.0.0.1:5001/api/history', {
+        const response = await fetch('https://mindspace-backend-4ogv.onrender.com/api/history', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {

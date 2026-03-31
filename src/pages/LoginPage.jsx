@@ -23,7 +23,7 @@ export default function LoginPage() {
     const payload = isLogin ? { email, password } : { email, password, name };
 
     try {
-      const response = await fetch(`http://127.0.0.1:5001${endpoint}`, {
+      const response = await fetch(`https://mindspace-backend-4ogv.onrender.com${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
