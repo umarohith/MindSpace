@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pattern Matcher: Neon Xylophone</title>
+    <style>
+        :root {
+            --bg: #05070a;
+            --tube-w: 60px;
+            /* Vibrant Instrument Colors */
+            --c1: #ff3e3e; --c2: #ffbe0b; --c3: #3a86ff; --c4: #8338ec;
+        }
+
+        body {
+            background-color: var(--bg);
+            background: radial-gradient(circle at center, #10141d 0%, #05070a 100%);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; margin: 0; overflow: hidden;
+        }
+
+        #status {
+            font-size: 1rem; letter-spacing: 5px; color: rgba(255,255,255,0.2);
+            margin-bottom: 50px; text-transform: uppercase;
+        }
+
+        #instrument {
+            display: flex; gap: 20px; align-items: flex-end; height: 300px;
+            perspective: 1000px;
+        }
+
+        .tube {
+            width: var(--tube-w);
+            border-radius: 30px;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.1s, opacity 0.3s;
+            opacity: 0.6;
+            border: 1px solid rgba(255,255,255,0.1);
+            /* Creating the 3D cylinder look */
+            box-shadow: 
+                inset -10px 0 20px rgba(0,0,0,0.5),
+                inset 10px 0 20px rgba(255,255,255,0.1);
+        }
+
+        /* Varying heights like a real Xylophone */
+        #t0 { height: 280px; background: linear-gradient(to bottom, #ff5f6d, #ff3e3e); color: #ff3e3e; }
+        #t1 { height: 250px; background: linear-gradient(to bottom, #ffcf33, #ffbe0b); color: #ffbe0b; }
+        #t2 { height: 220px; background: linear-gradient(to bottom, #4ea8de, #3a86ff); color: #3a86ff; }
+        #t3 { height: 190px; background: linear-gradient(to bottom, #9d4edd, #8338ec); color: #8338ec; }
+
+        .tube:hover { opacity: 0.8; transform: translateY(-5px); }
+        
+        /* The "Strike" Animation */
+        @keyframes strike {
+            0% { transform: scale(1); opacity: 0.6; filter: brightness(1); }
+            20% { transform: scale(1.05) translateY(-10px); opacity: 1; filter: brightness(1.5); box-shadow: 0 0 50px currentColor; }
+            100% { transform: scale(1); opacity: 0.6; filter: brightness(1); }
+        }
+
+        .active { animation: strike 0.5s ease-out forwards; }
+
+        #start-btn {
+            margin-top: 60px; padding: 15px 40px;
+            background: none; border: 1px solid rgba(255,255,255,0.1);
+            color: #666; border-radius: 50px; cursor: pointer;
+            letter-spacing: 3px; transition: 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        #start-btn:hover { border-color: white; color: white; background: rgba(255,255,255,0.05); }
+
+        .error-shake { animation: shake 0.4s; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            60% { transform: translateX(10px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="status">Listen & Repeat</div>
+
+    <div id="instrument">
+        <div id="t0" class="tube" onmousedown="userClick(0)"></div>
+        <div id="t1" class="tube" onmousedown="userClick(1)"></div>
+        <div id="t2" class="tube" onmousedown="userClick(2)"></div>
+        <div id="t3" class="tube" onmousedown="userClick(3)"></div>
+    </div>
+
+    <button id="start-btn" onclick="startGame()">START MELODY</button>
+
+    <script>
+        let audioCtx;
+        let sequence = [];
+        let userSequence = [];
+        let level = 0;
+        let isPlaying = false;
+        const freqs = [261.63, 293.66, 329.63, 349.23]; // C4, D4, E4, F4
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playNote(freq, isError = false) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            // Xylophone-like sound (Triangle wave is woodier than Sine)
+            osc.type = isError ? 'sawtooth' : 'triangle';
+            osc.frequency.setValueAtTime(isError ? 80 : freq, audioCtx.currentTime);
+            
+            gain.gain.setValueAtTime(0, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + (isError ? 0.5 : 1.0));
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 1.2);
+        }
+
+        function strikeTube(id) {
+            const el = document.getElementById(`t${id}`);
+            playNote(freqs[id]);
+            el.classList.remove('active');
+            void el.offsetWidth;
+            el.classList.add('active');
+        }
+
+        function startGame() {
+            initAudio();
+            sequence = [];
+            level = 0;
+            document.getElementById('start-btn').style.visibility = 'hidden';
+            nextRound();
+        }
+
+        function nextRound() {
+            level++;
+            userSequence = [];
+            sequence.push(Math.floor(Math.random() * 4));
+            document.getElementById('status').textContent = `MELODY ${level}`;
+            setTimeout(playSequence, 1000);
+        }
+
+        async function playSequence() {
+            isPlaying = true;
+            for (let id of sequence) {
+                strikeTube(id);
+                await new Promise(r => setTimeout(r, 600));
+            }
+            isPlaying = false;
+        }
+
+        function userClick(id) {
+            if (isPlaying || !audioCtx) return;
+            
+            const expected = sequence[userSequence.length];
+            if (id === expected) {
+                strikeTube(id);
+                userSequence.push(id);
+                if (userSequence.length === sequence.length) {
+                    setTimeout(nextRound, 1000);
+                }
+            } else {
+                playNote(0, true);
+                document.getElementById('instrument').classList.add('error-shake');
+                document.getElementById('status').textContent = "OFF KEY";
+                setTimeout(() => {
+                    document.getElementById('instrument').classList.remove('error-shake');
+                    document.getElementById('start-btn').style.visibility = 'visible';
+                    document.getElementById('start-btn').textContent = "REPLAY";
+                }, 500);
+            }
+        }
+    </script>
+</body>
+</html>
