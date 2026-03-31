@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, MessageCircle, Heart, Users, Activity, PlayCircle, LogOut, Gamepad2, TrendingUp, Globe } from 'lucide-react';
+import { Leaf, MessageCircle, Heart, Users, Activity, PlayCircle, LogOut, Gamepad2, TrendingUp, Globe, Sparkles } from 'lucide-react';
+import AuraChatbot from '../components/chatbot/AuraChatbot';
 import './DashboardPage.css';
 
 const activities = [
   { id: 'mudra', title: 'Mudra & Exercises', icon: <Heart size={24} />, path: '/mudra-therapy', desc: 'Center yourself with hand gestures and physical flow.', color: 'var(--nb-pink)', bg: 'var(--nb-red-bg)' },
   { id: 'games', title: 'Stress Relief Games', icon: <Gamepad2 size={24} />, path: '/games', desc: 'Pop bubbles and play with emojis to de-stress.', color: 'var(--nb-yellow)', bg: 'var(--nb-yellow-bg)' },
-  { id: 'chat', title: 'Aura Chatbot', icon: <MessageCircle size={24} />, path: '#', desc: 'Instant empathetic guidance and CBT support.', color: 'var(--nb-blue)', bg: 'var(--nb-blue-bg)' },
-  { id: 'peer', title: 'Peer Circle', icon: <Users size={24} />, path: '#', desc: 'Anonymous 1-on-1 and group support.', color: 'var(--nb-purple)', bg: 'var(--nb-purple-bg)' }
+  { id: 'peer', title: 'Volunteer to Peer Connection', icon: <Users size={24} />, path: '/volunteer-support', desc: 'Connect with mentors and peers for guided support.', color: 'var(--nb-purple)', bg: 'var(--nb-purple-bg)' }
 ];
 
 const MOOD_THEMES = {
@@ -24,6 +24,7 @@ export default function DashboardPage() {
   const [history, setHistory] = useState([]);
   const [user, setUser] = useState(null);
   const [mood, setMood] = useState(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('aura_user');
@@ -71,11 +72,11 @@ export default function DashboardPage() {
         </div>
         
         <div className="sidebar-links">
-          <button className="sidebar-link active nb-tag w-100"><Activity size={20} /> Dashboard</button>
+          <button className="sidebar-link active nb-tag w-100"><Activity size={20} /> Home</button>
           <button className="sidebar-link btn btn-secondary w-100" onClick={() => navigate('/mudra-therapy')}><Heart size={20} /> Therapy</button>
           <button className="sidebar-link btn btn-secondary w-100" onClick={() => navigate('/games')}><Gamepad2 size={20} /> Games</button>
-          <button className="sidebar-link btn btn-secondary w-100"><MessageCircle size={20} /> Chatbot</button>
-          <button className="sidebar-link btn btn-secondary w-100"><Users size={20} /> Community</button>
+          <button className={`sidebar-link btn ${isChatOpen ? 'nb-tag' : 'btn-secondary'} w-100`} onClick={() => setIsChatOpen(!isChatOpen)}><MessageCircle size={20} /> Aura Chat</button>
+          <button className="sidebar-link btn btn-secondary w-100" onClick={() => navigate('/volunteer-support')}><Users size={20} /> Community</button>
           <button className="sidebar-link btn btn-secondary w-100" onClick={() => navigate('/ngo-dashboard')}><Globe size={20} /> NGO Dashboard</button>
         </div>
 
@@ -107,43 +108,6 @@ export default function DashboardPage() {
             <div className="stat-body">
               <p>{theme.message}</p>
               <button className="btn btn-yellow w-100 mt-1" onClick={() => navigate('/games')}>Open Games <Gamepad2 size={16}/></button>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            className="nb-card-lg graph-card"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <div className="stat-header">
-              <div className="nb-tag bg-purple">Mental Progress</div>
-              <span className="resilience-tag">Growth: +15.4% <TrendingUp size={14}/></span>
-            </div>
-            
-            <div className="growth-graph-nb">
-              <div className="graph-y-axis">
-                <span>High</span>
-                <span>Mid</span>
-                <span>Low</span>
-              </div>
-              <div className="graph-main">
-                <div className="graph-columns">
-                  <div className="bar-wrapper"><div className="bar-nb" style={{height: '40%'}}></div><span>Mon</span></div>
-                  <div className="bar-wrapper"><div className="bar-nb" style={{height: '55%'}}></div><span>Tue</span></div>
-                  <div className="bar-wrapper"><div className="bar-nb" style={{height: '65%'}}></div><span>Wed</span></div>
-                  <div className="bar-wrapper"><div className="bar-nb active" style={{height: '75%'}}></div><span>Thu</span></div>
-                  <div className="bar-wrapper"><div className="bar-nb" style={{height: '60%'}}></div><span>Fri</span></div>
-                  <div className="bar-wrapper"><div className="bar-nb" style={{height: '85%'}}></div><span>Sat</span></div>
-                  <div className="bar-wrapper"><div className="bar-nb highlight" style={{height: '92%'}}></div><span>Sun</span></div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="graph-footer mt-1 flex justify-between align-center">
-              <div className="activity-stat"><div className="dot calm"></div> Calm</div>
-              <div className="activity-stat"><div className="dot focus"></div> Focus</div>
-              <div className="activity-stat"><div className="dot power"></div> Strength</div>
             </div>
           </motion.div>
 
@@ -206,6 +170,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
+      <AuraChatbot forcedOpen={isChatOpen} setForcedOpen={setIsChatOpen} />
     </div>
   );
 }

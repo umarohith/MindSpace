@@ -63,7 +63,7 @@ export default function NgoDashboardPage() {
         </div>
 
         <div className="sidebar-links">
-          <button className="sidebar-link btn btn-secondary w-100" onClick={() => navigate('/dashboard')}><Activity size={20} /> Dashboard</button>
+          <button className="sidebar-link btn btn-secondary w-100" onClick={() => navigate('/dashboard')}><Activity size={20} /> Home</button>
           <button className="sidebar-link btn btn-secondary w-100" onClick={() => navigate('/mudra-therapy')}><Heart size={20} /> Therapy</button>
           <button className="sidebar-link btn btn-secondary w-100" onClick={() => navigate('/games')}><Gamepad2 size={20} /> Games</button>
           <button className="sidebar-link btn btn-secondary w-100"><MessageCircle size={20} /> Chatbot</button>
