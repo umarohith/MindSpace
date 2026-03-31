@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Mic, Square, ArrowRight, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Mic, Square, ArrowRight, CheckCircle2, AlertCircle, Loader2, Heart, Shield, MessageCircle } from 'lucide-react';
 import './MoodCheckPage.css';
 
 /* ── Sentiment lexicon for accurate emotion detection ── */
@@ -44,13 +44,11 @@ function analyzeSentiment(transcript) {
   const negScore   = neg / total;
   const stressScore = stress / total;
 
-  // Determine dominant emotion
   if (posScore > negScore && posScore > 0.03) {
     if (posScore > 0.08) return { mood: 'great',       label: 'Joyful & Positive',    emoji: '😄', color: '#16A34A', phase: 'Flourishing' };
     return                      { mood: 'good',        label: 'Generally Positive',   emoji: '🙂', color: '#2563EB', phase: 'Stable' };
   }
   
-  // Stress threshold increased to avoid false detections from single words
   if (stressScore > 0.1 || (stress > 1 && negScore < 0.05)) {
     return                      { mood: 'stressed',    label: 'Mildly Stressed',      emoji: '😟', color: '#CA8A04', phase: 'Tension' };
   }
@@ -70,6 +68,69 @@ const emojis = [
   { id: 'overwhelmed', label: 'Overwhelmed', icon: '😫', color: '#DC2626', bg: '#FEE2E2' },
 ];
 
+/* ── Emotional Check-in Questions ── */
+const CHECKIN_QUESTIONS = [
+  {
+    id: 'q1',
+    question: 'Over the last 2 weeks, how often have you felt down, depressed, or hopeless?',
+    options: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'],
+    scores: [0, 1, 2, 3],
+  },
+  {
+    id: 'q2',
+    question: 'How often have you had little interest or pleasure in doing things?',
+    options: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'],
+    scores: [0, 1, 2, 3],
+  },
+  {
+    id: 'q3',
+    question: 'How often have you felt nervous, anxious, or on edge?',
+    options: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'],
+    scores: [0, 1, 2, 3],
+  },
+  {
+    id: 'q4',
+    question: 'How often do you find it hard to control your worrying?',
+    options: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'],
+    scores: [0, 1, 2, 3],
+  },
+  {
+    id: 'q5',
+    question: 'How often do you feel overwhelmed by your thoughts or situations?',
+    options: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'],
+    scores: [0, 1, 2, 3],
+  },
+  {
+    id: 'q6',
+    question: 'Do you feel like you have no one to talk to about your problems?',
+    options: ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'],
+    scores: [0, 1, 2, 3],
+  },
+  {
+    id: 'q7',
+    question: 'How difficult is it for you to focus on studies or work because of how you feel?',
+    options: ['Not difficult', 'Slightly difficult', 'Very difficult', 'Extremely difficult'],
+    scores: [0, 1, 2, 3],
+  },
+];
+
+function classifyStress(totalScore) {
+  // Max score = 7 questions × 3 = 21
+  if (totalScore <= 4)  return { level: 'low',      label: 'Low Stress',       color: '#16A34A', emoji: '🌿', message: "You're doing well! Keep nurturing your mental health." };
+  if (totalScore <= 10) return { level: 'moderate',  label: 'Moderate Stress',  color: '#CA8A04', emoji: '🌤️', message: "You're managing, but consider taking some time for self-care." };
+  if (totalScore <= 16) return { level: 'high',      label: 'High Stress',      color: '#EA580C', emoji: '🌧️', message: "It looks like things have been tough. We're here for you." };
+  return                       { level: 'critical',  label: 'Critical Stress',  color: '#DC2626', emoji: '🆘', message: "Please consider reaching out to someone you trust, or a professional." };
+}
+
+/*
+ * FLOW:
+ *   Step 1 — Voice Recording
+ *   Step 2 — Emoji Confirmation + Region
+ *   Step 3 — Check-in Intro Screen
+ *   Step 4..10 — Questions Q1–Q7 (step - 3 = question index)
+ *   Step 11 — Processing → redirect
+ */
+
 export default function MoodCheckPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -79,22 +140,33 @@ export default function MoodCheckPage() {
   const [voiceResult, setVoiceResult] = useState(null);
   const [selectedEmoji, setSelectedEmoji] = useState(null);
   const [finalMood, setFinalMood] = useState(null);
-  const [region, setRegion] = useState('Global'); // Default region
+  const [region, setRegion] = useState('Global');
+
+  // Check-in state
+  const [checkinAnswers, setCheckinAnswers] = useState({});
+  const [stressResult, setStressResult] = useState(null);
 
   const intervalRef    = useRef(null);
   const recognitionRef = useRef(null);
 
-  // ── Start recording: Web Speech API + timer ─────────────────
+  // Determine total steps for the header dots
+  // 1 (voice) + 2 (emoji) + 3 (intro) + 7 questions + processing = 12 total, show simplified dots
+  const totalHeaderDots = 4; // simplified: voice → emoji → checkin → done
+  const getHeaderProgress = () => {
+    if (step <= 1) return 1;
+    if (step <= 2) return 2;
+    if (step <= 10) return 3; // checkin phase
+    return 4;
+  };
+
+  // ── Recording logic ─────────────────
   const startRecording = () => {
     setTranscript('');
     setVoiceResult(null);
     setRecordingTime(0);
     setIsRecording(true);
-
-    // Start timer
     intervalRef.current = setInterval(() => setRecordingTime(t => t + 1), 1000);
 
-    // Start speech recognition
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       const rec = new SpeechRecognition();
@@ -125,7 +197,6 @@ export default function MoodCheckPage() {
     if (recognitionRef.current) {
       recognitionRef.current.stop();
     }
-    // Analyze after brief delay (allow final result to come in)
     setTimeout(() => {
       setTranscript(prev => {
         const result = analyzeSentiment(prev);
@@ -148,30 +219,55 @@ export default function MoodCheckPage() {
 
   const handleEmojiSelect = (id) => setSelectedEmoji(id);
 
-  const handleFinish = async () => {
+  // Move to check-in intro after confirming mood
+  const handleMoodConfirmed = () => {
     const chosen = emojis.find(e => e.id === selectedEmoji);
     setFinalMood(chosen);
-    setStep(3);
-    
+    setStep(3); // Go to check-in intro
+  };
+
+  // Handle check-in answer
+  const handleCheckinAnswer = (questionIndex, optionIndex, score) => {
+    const qId = CHECKIN_QUESTIONS[questionIndex].id;
+    setCheckinAnswers(prev => ({ ...prev, [qId]: { optionIndex, score } }));
+
+    // If last question, compute stress and go to processing
+    if (questionIndex === CHECKIN_QUESTIONS.length - 1) {
+      const totalScore = Object.values({ ...checkinAnswers, [qId]: { score } })
+        .reduce((sum, a) => sum + a.score, 0);
+      const stress = classifyStress(totalScore);
+      setStressResult(stress);
+      // Short delay then go to processing
+      setTimeout(() => setStep(11), 800);
+    } else {
+      // Next question
+      setTimeout(() => setStep(step + 1), 300);
+    }
+  };
+
+  // Final finish — save data and redirect
+  const handleFinish = async () => {
+    const chosen = finalMood;
+
     const sessionData = {
       id: chosen.id,
       label: chosen.label,
       icon: chosen.icon,
       color: chosen.color,
       bg: chosen.bg,
-      region: region, // Added region
+      region: region,
+      stressLevel: stressResult?.level || 'unknown',
+      stressLabel: stressResult?.label || '',
+      checkinAnswers: checkinAnswers,
       timestamp: Date.now()
     };
 
-    // Save to localStorage for the Dashboard to pick up
     localStorage.setItem('userMood', JSON.stringify(sessionData));
 
-    // Consolidate into global DB for NGO Dashboard
     const allSessions = JSON.parse(localStorage.getItem('allUserSessions') || '[]');
     allSessions.push(sessionData);
     localStorage.setItem('allUserSessions', JSON.stringify(allSessions));
 
-    // Save to backend history
     const token = localStorage.getItem('aura_token');
     if (token) {
       try {
@@ -184,7 +280,7 @@ export default function MoodCheckPage() {
           body: JSON.stringify({
             type: 'mood',
             activity: chosen.id,
-            details: `Felt ${chosen.label} in ${region}`
+            details: `Felt ${chosen.label} in ${region} — Stress: ${stressResult?.label || 'N/A'}`
           })
         });
       } catch (err) {
@@ -195,7 +291,18 @@ export default function MoodCheckPage() {
     setTimeout(() => navigate('/dashboard'), 2800);
   };
 
+  // Trigger handleFinish when step 11 is reached
+  useEffect(() => {
+    if (step === 11) {
+      handleFinish();
+    }
+  }, [step]);
+
   const formatTime = (t) => `${Math.floor(t/60).toString().padStart(2,'0')}:${(t%60).toString().padStart(2,'0')}`;
+
+  // Calculate current question index when in question steps (4–10)
+  const currentQuestionIndex = step - 4;
+  const currentQuestion = CHECKIN_QUESTIONS[currentQuestionIndex];
 
   return (
     <div className="mood-check-page">
@@ -205,7 +312,7 @@ export default function MoodCheckPage() {
         <div className="nb-mood-header">
           <span className="nb-logo-tag">🧠 MindBloom</span>
           <div className="nb-step-dots">
-            {[1,2,3].map(s => <div key={s} className={`nb-dot ${step >= s ? 'active' : ''}`} />)}
+            {[1,2,3,4].map(s => <div key={s} className={`nb-dot ${getHeaderProgress() >= s ? 'active' : ''}`} />)}
           </div>
         </div>
 
@@ -325,19 +432,121 @@ export default function MoodCheckPage() {
 
               <div className="nb-step-actions">
                 <button className="text-btn" onClick={() => setStep(1)}>← Back</button>
-                <button className="btn btn-primary" onClick={handleFinish} disabled={!selectedEmoji}>
-                  Complete Check-in <CheckCircle2 size={18} />
+                <button className="btn btn-primary" onClick={handleMoodConfirmed} disabled={!selectedEmoji}>
+                  Continue <ArrowRight size={18} />
                 </button>
               </div>
             </motion.div>
           )}
 
-          {/* STEP 3 — Processing */}
+          {/* STEP 3 — Check-in Intro Screen */}
           {step === 3 && (
-            <motion.div key="s3" className="nb-step-card nb-step-center"
+            <motion.div key="s3-intro" className="checkin-wrapper"
+              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}>
+              <div className="checkin-card checkin-intro">
+                <div className="checkin-intro-glow" />
+                <div className="checkin-intro-icon">
+                  <Shield size={48} strokeWidth={1.5} />
+                </div>
+                <h2 className="checkin-intro-title">
+                  Hey, just a few quick questions to understand how you're feeling.
+                </h2>
+                <p className="checkin-intro-subtitle">
+                  This is completely anonymous and takes less than a minute.
+                </p>
+                <div className="checkin-intro-badges">
+                  <span className="checkin-badge"><Heart size={14} /> Safe & Private</span>
+                  <span className="checkin-badge"><MessageCircle size={14} /> ~60 seconds</span>
+                </div>
+                <motion.button 
+                  className="checkin-start-btn"
+                  onClick={() => setStep(4)}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}>
+                  👉 Start
+                </motion.button>
+                <button className="checkin-skip-btn" onClick={() => { setStressResult(classifyStress(0)); setStep(11); }}>
+                  Skip check-in
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* STEPS 4–10 — Questions Q1 to Q7 */}
+          {step >= 4 && step <= 10 && currentQuestion && (
+            <motion.div key={`q-${currentQuestionIndex}`} className="checkin-wrapper"
+              initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}>
+              <div className="checkin-card checkin-question-card">
+                {/* Progress indicator */}
+                <div className="checkin-progress-row">
+                  <span className="checkin-progress-label">{currentQuestionIndex + 1} of {CHECKIN_QUESTIONS.length}</span>
+                  <div className="checkin-progress-bar">
+                    <motion.div 
+                      className="checkin-progress-fill"
+                      initial={{ width: `${(currentQuestionIndex / CHECKIN_QUESTIONS.length) * 100}%` }}
+                      animate={{ width: `${((currentQuestionIndex + 1) / CHECKIN_QUESTIONS.length) * 100}%` }}
+                      transition={{ duration: 0.4 }}
+                    />
+                  </div>
+                </div>
+
+                {/* Chat bubble question */}
+                <div className="checkin-chat-area">
+                  <div className="checkin-avatar">🤗</div>
+                  <motion.div 
+                    className="checkin-bubble"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1, duration: 0.3 }}>
+                    <p>{currentQuestion.question}</p>
+                  </motion.div>
+                </div>
+
+                {/* Answer buttons */}
+                <div className="checkin-options">
+                  {currentQuestion.options.map((option, idx) => (
+                    <motion.button
+                      key={idx}
+                      className={`checkin-option-btn ${checkinAnswers[currentQuestion.id]?.optionIndex === idx ? 'selected' : ''}`}
+                      onClick={() => handleCheckinAnswer(currentQuestionIndex, idx, currentQuestion.scores[idx])}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.15 + idx * 0.07 }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.97 }}>
+                      <span className="checkin-option-dot" />
+                      {option}
+                    </motion.button>
+                  ))}
+                </div>
+
+                {/* Back button */}
+                {currentQuestionIndex > 0 && (
+                  <button className="checkin-back-btn" onClick={() => setStep(step - 1)}>
+                    ← Previous question
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* STEP 11 — Processing */}
+          {step === 11 && (
+            <motion.div key="s-final" className="nb-step-card nb-step-center"
               initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
               <div style={{ fontSize: '4rem' }}>{finalMood?.icon || '🧠'}</div>
               <h2>Your profile is ready</h2>
+              {stressResult && (
+                <div className="checkin-stress-result" style={{ '--stress-color': stressResult.color }}>
+                  <span style={{ fontSize: '1.75rem' }}>{stressResult.emoji}</span>
+                  <div>
+                    <div className="checkin-stress-level">{stressResult.label}</div>
+                    <div className="checkin-stress-message">{stressResult.message}</div>
+                  </div>
+                </div>
+              )}
               <p>Generating personalized recommendations for your <strong>{finalMood?.label || 'current'}</strong> state...</p>
               <div className="nb-processing-bar">
                 <motion.div className="nb-processing-fill"
