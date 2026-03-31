@@ -20,7 +20,8 @@ const mudras = [
       'Touch the tip of your INDEX finger to your THUMB tip.',
       'Keep the remaining 3 fingers STRAIGHT and relaxed.',
     ],
-    emoji: '🤌', color: 'var(--nb-purple)', bg: 'var(--nb-purple-bg)'
+    emoji: '🤌', color: 'var(--nb-purple)', bg: 'var(--nb-purple-bg)',
+    image: '/mudras/gyan.png'
   },
   {
     id: 'prana', name: 'Prana Mudra', sanskrit: 'प्राण मुद्रा',
@@ -30,7 +31,8 @@ const mudras = [
       'Fold your RING and LITTLE fingers to touch the THUMB tip.',
       'Keep INDEX and MIDDLE fingers EXTENDED together.',
     ],
-    emoji: '🖐', color: 'var(--nb-blue)', bg: 'var(--nb-blue-bg)'
+    emoji: '🖐', color: 'var(--nb-blue)', bg: 'var(--nb-blue-bg)',
+    image: '/mudras/prana.png'
   },
   {
     id: 'shuni', name: 'Shuni Mudra', sanskrit: 'शूनी मुद्रा',
@@ -40,32 +42,8 @@ const mudras = [
       'Touch the tip of your MIDDLE finger to your THUMB tip.',
       'Keep all other fingers GENTLY extended.',
     ],
-    emoji: '👌', color: 'var(--nb-green)', bg: 'var(--nb-green-bg)'
-  }
-];
-
-const exercises = [
-  {
-    id: 'neck', name: 'Neck Rotation',
-    benefit: 'Release cervical tension',
-    steps: [
-      'Sit tall with shoulders relaxed.',
-      'Slowly drop your chin to your chest.',
-      'Rotate your head in a slow clockwise circle.',
-      'Repeat 5 times, then switch directions.'
-    ],
-    emoji: '🙆', color: 'var(--nb-pink)', bg: 'var(--nb-red-bg)'
-  },
-  {
-    id: 'shoulder', name: 'Shoulder Shrugs',
-    benefit: 'De-stress upper body',
-    steps: [
-      'Lift both shoulders up toward your ears.',
-      'Hold for 2 seconds with deep inhale.',
-      'Drop them suddenly while exhaling.',
-      'Do this 10 times to release weight.'
-    ],
-    emoji: '🤷', color: 'var(--nb-orange)', bg: 'var(--nb-yellow-bg)'
+    emoji: '👌', color: 'var(--nb-green)', bg: 'var(--nb-green-bg)',
+    image: '/mudras/shuni.png'
   }
 ];
 
@@ -73,7 +51,6 @@ const STATES = { ANALYZING: 'analyzing', CORRECT: 'correct', INCORRECT: 'incorre
 
 export default function MudraTherapyPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('mudra'); // 'mudra' or 'exercise'
   const [isPlaying, setIsPlaying] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [mpReady, setMpReady] = useState(false);
@@ -94,8 +71,7 @@ export default function MudraTherapyPage() {
   const itemIdxRef   = useRef(0);
 
   itemIdxRef.current = itemIdx;
-  const currentItems = activeTab === 'mudra' ? mudras : exercises;
-  const currentItem  = currentItems[itemIdx];
+  const currentItem  = mudras[itemIdx];
 
   // MediaPipe Load
   useEffect(() => {
@@ -117,17 +93,16 @@ export default function MudraTherapyPage() {
       }
     };
     loadMP();
-  }, [activeTab]);
+  }, []);
 
   const processFrame = useCallback(async () => {
-    if (activeTab === 'mudra' && videoRef.current && handsRef.current && videoRef.current.readyState >= 2) {
+    if (videoRef.current && handsRef.current && videoRef.current.readyState >= 2) {
       await handsRef.current.send({ image: videoRef.current });
     }
     animFrameRef.current = requestAnimationFrame(processFrame);
-  }, [activeTab]);
+  }, []);
 
   const onHandResults = useCallback((results) => {
-    if (activeTab !== 'mudra') return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -141,12 +116,11 @@ export default function MudraTherapyPage() {
 
     const marks = results.multiHandLandmarks[0];
     
-    // DRAW SKELETON (The "Gestures")
+    // DRAW SKELETON
     if (marks) {
       ctx.lineWidth = 4;
       ctx.lineCap = 'round';
       
-      // Define palm and finger connections
       const connections = [
         [0, 1, 2, 3, 4],     // Thumb
         [0, 5, 6, 7, 8],     // Index
@@ -158,7 +132,7 @@ export default function MudraTherapyPage() {
 
       connections.forEach(path => {
         ctx.beginPath();
-        ctx.strokeStyle = activeTab === 'mudra' ? '#8B5CF6' : '#10B981';
+        ctx.strokeStyle = '#8B5CF6';
         path.forEach((idx, i) => {
           const pt = marks[idx];
           if (i === 0) ctx.moveTo(pt.x * canvas.width, pt.y * canvas.height);
@@ -167,7 +141,6 @@ export default function MudraTherapyPage() {
         ctx.stroke();
       });
 
-      // Draw Joint Points
       marks.forEach(pt => {
         ctx.beginPath();
         ctx.arc(pt.x * canvas.width, pt.y * canvas.height, 4, 0, 2 * Math.PI);
@@ -191,7 +164,7 @@ export default function MudraTherapyPage() {
       setFeedbackMessage(result.message);
       setFeedbackTip(result.tip || '');
     }
-  }, [activeTab]);
+  }, []);
 
   const startCountdown = useCallback(() => {
     setTimer(PRACTICE_DURATION);
@@ -207,22 +180,22 @@ export default function MudraTherapyPage() {
   const advance = () => {
     // Save to backend
     const token = localStorage.getItem('aura_token');
-    const finishedItem = currentItems[itemIdx];
+    const finishedItem = mudras[itemIdx];
     if (token) {
-      fetch('https://mindspace-backend-4ogv.onrender.com/api/history', {
+      fetch('http://127.0.0.1:5000/api/history', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          type: activeTab,
+          type: 'mudra',
           data: { name: finishedItem.name, id: finishedItem.id }
         })
       }).catch(err => console.error('History save failed', err));
     }
 
-    if (itemIdx < currentItems.length - 1) {
+    if (itemIdx < mudras.length - 1) {
       setItemIdx(itemIdx + 1);
       setTimer(PRACTICE_DURATION);
       streakRef.current = 0;
@@ -236,13 +209,13 @@ export default function MudraTherapyPage() {
   useEffect(() => {
     if (isPlaying) {
       startCountdown();
-      if (activeTab === 'mudra') animFrameRef.current = requestAnimationFrame(processFrame);
+      animFrameRef.current = requestAnimationFrame(processFrame);
     } else {
       clearInterval(countdownRef.current);
       cancelAnimationFrame(animFrameRef.current);
     }
     return () => { clearInterval(countdownRef.current); cancelAnimationFrame(animFrameRef.current); };
-  }, [isPlaying, activeTab]);
+  }, [isPlaying]);
 
   const toggleSession = async () => {
     if (isPlaying) {
@@ -254,17 +227,15 @@ export default function MudraTherapyPage() {
       setCameraActive(false);
     } else {
       setIsPlaying(true);
-      if (activeTab === 'mudra') {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-          }
-          setCameraActive(true);
-        } catch (err) {
-          console.error("Camera access failed", err);
-          setIsPlaying(false);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
         }
+        setCameraActive(true);
+      } catch (err) {
+        console.error("Camera access failed", err);
+        setIsPlaying(false);
       }
     }
   };
@@ -275,7 +246,7 @@ export default function MudraTherapyPage() {
         <div className="nb-card-lg completion-card p-3 text-center">
           <div className="big-emoji">🏆</div>
           <h2>Level Up!</h2>
-          <p>You've completed your <strong>{activeTab}</strong> session flawlessly.</p>
+          <p>You've completed your <strong>Mudra</strong> session flawlessly.</p>
           <button className="btn btn-primary mt-2" onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
         </div>
       </div>
@@ -286,21 +257,43 @@ export default function MudraTherapyPage() {
     <div className="mudra-nb-page">
       <nav className="nb-top-nav">
         <button className="btn btn-secondary" onClick={() => navigate('/dashboard')}><ArrowLeft size={20}/></button>
-        <div className="tab-switcher nb-card">
-          <button className={`tab-btn ${activeTab === 'mudra' ? 'active' : ''}`} onClick={() => {setActiveTab('mudra'); setItemIdx(0); setIsPlaying(false);}}>Mudras</button>
-          <button className={`tab-btn ${activeTab === 'exercise' ? 'active' : ''}`} onClick={() => {setActiveTab('exercise'); setItemIdx(0); setIsPlaying(false);}}>Exercises</button>
-        </div>
-        <div className="nb-tag bg-purple">Session Flow</div>
+        <div className="nb-tag bg-purple">Mudra Therapy Session</div>
+        <div className="nb-tag bg-green">Level: Beginner</div>
       </nav>
 
       <div className="container nb-main-content mt-2">
         <div className="nb-grid">
           
               <div className="info-side">
-                <motion.div key={currentItem.id + activeTab} className="nb-card-lg p-3" initial={{opacity:0, x:-20}} animate={{opacity:1, x:0}}>
-                  <div className="nb-tag mb-1" style={{background: currentItem.color, color:'#fff'}}>{activeTab.toUpperCase()} {itemIdx + 1}</div>
+                <motion.div key={currentItem.id} className="nb-card-lg p-4" initial={{opacity:0, x:-20}} animate={{opacity:1, x:0}}>
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="nb-tag" style={{background: currentItem.color, color:'#fff'}}>MUDRA {itemIdx + 1} / {mudras.length}</div>
+                    <div className="flex gap-1">
+                      <button 
+                        className="btn btn-secondary btn-mini" 
+                        onClick={() => setItemIdx(prev => Math.max(0, prev - 1))} 
+                        disabled={itemIdx === 0}
+                      >
+                        <ChevronLeft size={16}/>
+                      </button>
+                      <button 
+                        className="btn btn-secondary btn-mini" 
+                        onClick={() => setItemIdx(prev => Math.min(mudras.length - 1, prev + 1))} 
+                        disabled={itemIdx === mudras.length - 1}
+                      >
+                        <ChevronRight size={16}/>
+                      </button>
+                    </div>
+                  </div>
                   <h1>{currentItem.name}</h1>
                   {currentItem.sanskrit && <p className="sanskrit-text">{currentItem.sanskrit}</p>}
+                  
+                  {currentItem.image && (
+                    <div className="mudra-guide-img-container mt-2">
+                       <img src={currentItem.image} alt={currentItem.name} className="mudra-guide-img" />
+                    </div>
+                  )}
+                  
                   <div className="benefit-badge nb-tag bg-yellow mt-1">✨ {currentItem.benefit}</div>
                   
                   <div className="steps-list mt-2">
@@ -326,7 +319,7 @@ export default function MudraTherapyPage() {
               )}
 
               <button className="btn btn-primary w-100 mt-2 p-1" onClick={toggleSession}>
-                {isPlaying ? <><Pause/> Pause Session</> : <><Play/> Start {activeTab}</>}
+                {isPlaying ? <><Pause/> Pause Session</> : <><Play/> Start Mudra</>}
               </button>
             </motion.div>
           </div>
@@ -335,7 +328,6 @@ export default function MudraTherapyPage() {
           <div className="visual-side">
             <div className="nb-card-lg master-visual-container cosmic-skin">
               <div className="camera-view-nb">
-                 {/* BASE LAYER: The Cosmic Reference Scene */}
                  <div className="cosmic-scene">
                     <div className="cosmic-aura">
                       <div className="cosmic-spike" />
@@ -350,7 +342,6 @@ export default function MudraTherapyPage() {
                     )}
                  </div>
 
-                 {/* OVERLAY LAYER: The User Video (PIP Mode) */}
                  <div 
                     className="floating-cam-nb lib-card"
                     style={{ 
@@ -375,9 +366,9 @@ export default function MudraTherapyPage() {
               </div>
               
               <div className="nb-controls-row p-1">
-                {(timer === 0 || (activeTab === 'mudra' && correctStreak >= 5)) && (
+                {(timer === 0 || correctStreak >= 5) && (
                   <button className="btn btn-yellow w-100" onClick={advance}>
-                    <SkipForward size={18}/> Next {activeTab === 'mudra' ? 'Mudra' : 'Exercise'}
+                    <SkipForward size={18}/> Next Mudra
                   </button>
                 )}
               </div>

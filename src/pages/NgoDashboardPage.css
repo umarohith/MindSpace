@@ -1,8 +1,8 @@
 /* NGO DASHBOARD CSS - Neobrutalism 2.0 Edition */
 
 .ngo-dashboard-page {
-  padding: 2rem;
-  max-width: 1400px;
+  padding: 2.5rem 4rem;
+  max-width: 1600px;
   margin: 0 auto;
   min-height: 100vh;
   background: var(--nb-bg);
@@ -15,13 +15,22 @@
   margin-bottom: 2rem;
 }
 
+.nb-top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 3rem;
+  background: #fff;
+  border-bottom: 3.5px solid var(--nb-border);
+}
+
 .ngo-stat {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  padding: 1.5rem;
+  gap: 1.5rem;
+  padding: 2.5rem;
   background: white;
-  border: 3px solid var(--nb-border);
+  border: 3.5px solid var(--nb-border);
   border-radius: var(--nb-radius);
   box-shadow: var(--nb-shadow);
 }
@@ -138,6 +147,12 @@
 .insight-item:hover {
   transform: translate(-2px, -2px);
   box-shadow: 6px 6px 0 var(--nb-border);
+}
+
+.games-header {
+  margin-top: 4rem;
+  margin-bottom: 4rem;
+  padding: 0 3rem;
 }
 
 .insight-item p {

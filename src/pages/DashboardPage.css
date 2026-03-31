@@ -3,19 +3,22 @@
   grid-template-columns: 320px 1fr;
   min-height: 100vh;
   background: var(--nb-bg);
-  padding: 1.5rem;
-  gap: 1.5rem;
+  padding: 2.5rem;
+  gap: 2.5rem;
 }
 
 .dashboard-sidebar {
-  padding: 2.5rem;
+  padding: 3rem;
   background: #fff;
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
-  height: calc(100vh - 3rem);
+  gap: 3rem;
+  height: calc(100vh - 5rem);
   position: sticky;
-  top: 1.5rem;
+  top: 2.5rem;
+  border: 3.5px solid var(--nb-border);
+  border-radius: var(--nb-radius);
+  box-shadow: var(--nb-shadow-lg);
 }
 
 .sidebar-brand {
@@ -42,10 +45,10 @@
 }
 
 .dashboard-main {
-  padding: 1.5rem;
+  padding: 1rem 2.5rem;
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 4rem;
 }
 
 .dashboard-header h1 {
@@ -71,7 +74,7 @@
 }
 
 .stat-card {
-  padding: 2rem;
+  padding: 3rem;
 }
 
 .stat-body p {
@@ -221,13 +224,14 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
+  gap: 2.5rem;
 }
 
 .activity-item {
   display: flex;
   align-items: center;
-  gap: 2rem;
-  padding: 2.5rem;
+  gap: 2.5rem;
+  padding: 3.5rem;
   background: var(--act-bg, #fff);
   cursor: pointer;
   height: auto;
