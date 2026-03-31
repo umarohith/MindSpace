@@ -1,0 +1,175 @@
+/* ════════════════════════════════════════════════════════════════
+   NEOBRUTALISM 2.0 - "Curvey Brutal"
+   - Rounded corners (Friendly, not sharp)
+   - Dynamic Display Fonts (Outfit)
+   - High Contrast + Bold Accents
+   ════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;700&display=swap');
+
+/* ── Tokens ──────────────────────────────────────────────────── */
+:root {
+  --font-main:    'Outfit', sans-serif;
+  --font-heading: 'Outfit', sans-serif;
+
+  /* Neobrutalism base - Rounded Edition */
+  --nb-bg:       #F8F9FA;
+  --nb-card:     #FFFFFF;
+  --nb-border:   #1A1A1A;
+  --nb-shadow:   5px 5px 0px #1A1A1A;
+  --nb-shadow-lg:8px 8px 0px #1A1A1A;
+  --nb-radius:   18px; /* High radius for "not sharp" look */
+
+  /* Modern Accent Palette */
+  --nb-purple:   #8B5CF6; /* Violet */
+  --nb-blue:     #3B82F6; /* Blue */
+  --nb-green:    #10B981; /* Emerald */
+  --nb-yellow:   #FBBF24; /* Amber */
+  --nb-red:      #EF4444; /* Rose */
+  --nb-pink:     #EC4899; /* Pink */
+  --nb-orange:   #F97316; /* Orange */
+  --nb-cyan:     #06B6D4; /* Cyan */
+
+  /* Light fills for contrast */
+  --nb-purple-bg: #EDE9FE;
+  --nb-blue-bg:   #DBEAFE;
+  --nb-green-bg:  #D1FAE5;
+  --nb-yellow-bg: #FEF3C7;
+  --nb-red-bg:    #FEE2E2;
+
+  /* Text */
+  --nb-text:      #0F172A;
+  --nb-text-2:    #334155;
+  --nb-text-muted:#64748B;
+}
+
+/* ── Reset & Base ────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--nb-bg);
+  color: var(--nb-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Neobrutalism 2.0 Utilities ─────────────────────────────── */
+.nb-card {
+  background: var(--nb-card);
+  border: 3px solid var(--nb-border);
+  border-radius: var(--nb-radius);
+  box-shadow: var(--nb-shadow);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.nb-card-lg {
+  background: var(--nb-card);
+  border: 3.5px solid var(--nb-border);
+  border-radius: var(--nb-radius);
+  box-shadow: var(--nb-shadow-lg);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.nb-card:hover, .nb-card-lg:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 8px 8px 0 var(--nb-border);
+}
+
+.nb-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  border: 2.5px solid var(--nb-border);
+  border-radius: 50px; /* Circular tags */
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  text-transform: capitalize;
+  box-shadow: 3px 3px 0 var(--nb-border);
+  background: #fff;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.9rem 1.8rem;
+  font-family: var(--font-main);
+  font-weight: 800;
+  font-size: 1.05rem;
+  border: 3px solid var(--nb-border);
+  border-radius: 50px; /* Fully rounded buttons */
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 4px 4px 0 var(--nb-border);
+  text-decoration: none;
+}
+
+.btn:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 8px 8px 0 var(--nb-border);
+}
+
+.btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--nb-border);
+}
+
+.btn-primary   { background: var(--nb-purple); color: #fff; border-color: var(--nb-border); }
+.btn-secondary { background: #fff;             color: var(--nb-text); }
+.btn-success   { background: var(--nb-green);  color: #fff; }
+.btn-danger    { background: var(--nb-red);    color: #fff; }
+.btn-yellow    { background: var(--nb-yellow); color: var(--nb-text); }
+
+.text-btn {
+  background: none;
+  border: none;
+  color: var(--nb-text-muted);
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  padding: 0.6rem;
+  transition: color 0.2s;
+}
+
+.text-btn:hover { color: var(--nb-purple); }
+
+/* ── Layout Utilities ────────────────────────────────────────── */
+.container   { max-width: 1200px; margin: 0 auto; padding: 0 2rem; width: 100%; }
+.flex        { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.col         { flex-direction: column; }
+.gap-1       { gap: 0.5rem; }
+.gap-2       { gap: 1rem; }
+.gap-3       { gap: 1.5rem; }
+.mt-auto     { margin-top: auto; }
+.text-center { text-align: center; }
+.w-100       { width: 100%; }
+
+/* ── Typography ──────────────────────────────────────────────── */
+h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 900; line-height: 1.1; letter-spacing: -0.04em; }
+h2 { font-size: clamp(1.8rem, 4vw, 2.8rem);  font-weight: 800; line-height: 1.2;  letter-spacing: -0.03em; }
+h3 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.01em; }
+p  { font-weight: 400; font-size: 1.1rem; }
+
+/* ── Scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--nb-bg); }
+::-webkit-scrollbar-thumb { 
+  background: var(--nb-border); 
+  border-radius: 10px; 
+  border: 2px solid var(--nb-bg);
+}

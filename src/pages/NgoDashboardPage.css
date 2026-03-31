@@ -1,0 +1,232 @@
+/* NGO DASHBOARD CSS - Neobrutalism 2.0 Edition */
+
+.ngo-dashboard-page {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--nb-bg);
+}
+
+.ngo-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.ngo-stat {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background: white;
+  border: 3px solid var(--nb-border);
+  border-radius: var(--nb-radius);
+  box-shadow: var(--nb-shadow);
+}
+
+.ngo-stat-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--nb-border);
+  box-shadow: 3px 3px 0 var(--nb-border);
+}
+
+.ngo-stat-info h3 {
+  font-size: 2rem;
+  margin: 0;
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.ngo-stat-info p {
+  margin: 0;
+  color: var(--nb-text-2);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.ngo-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.ngo-charts-grid .span-2 {
+  grid-column: span 2;
+}
+
+.ngo-chart-card {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border: 3px solid var(--nb-border);
+  border-radius: var(--nb-radius);
+  box-shadow: var(--nb-shadow);
+}
+
+.ngo-chart-title {
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  font-weight: 800;
+  border-bottom: 2.5px dashed var(--nb-border);
+}
+
+.chart-container {
+  flex: 1;
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  min-height: 250px;
+  background: rgba(0,0,0,0.02);
+  border-radius: 12px;
+  border: 2px solid rgba(0,0,0,0.05);
+}
+
+.bg-purple-light {
+  background-color: #f3e8ff;
+}
+
+.ngo-insights-card {
+  padding: 2.5rem;
+  border: 3.5px solid var(--nb-border);
+  border-radius: var(--nb-radius);
+  background: white;
+  border-color: var(--nb-purple);
+  box-shadow: 6px 6px 0 var(--nb-purple);
+}
+
+.ngo-insights-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.ngo-insights-header h2 {
+  font-size: 1.75rem;
+  margin: 0;
+  color: var(--nb-text);
+  font-weight: 900;
+}
+
+.ngo-insights-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.insight-item {
+  background: #fff;
+  border: 3px solid var(--nb-border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 4px 4px 0 var(--nb-border);
+  transition: transform 0.2s;
+}
+
+.insight-item:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--nb-border);
+}
+
+.insight-item p {
+  margin-top: 1rem;
+  margin-bottom: 0;
+  line-height: 1.6;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.insight-item h4 {
+  font-weight: 800;
+  color: var(--nb-purple);
+  font-size: 1.1rem;
+}
+
+.insight-item .mt-1 {
+  margin-top: 1rem;
+}
+
+/* Mock Visualization Styles */
+.mock-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  height: 100%;
+  width: 100%;
+  padding: 20px;
+}
+
+.mock-bar {
+  flex: 1;
+  border: 2px solid var(--nb-border);
+  border-radius: 8px 8px 0 0;
+  min-width: 30px;
+  transition: height 0.5s ease;
+  position: relative;
+}
+
+.mock-bar::after {
+  content: '';
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.mock-line-chart {
+  width: 80%;
+  height: 60%;
+  border-left: 3px solid var(--nb-border);
+  border-bottom: 3px solid var(--nb-border);
+  position: relative;
+}
+
+.mock-line {
+  position: absolute;
+  height: 4px;
+  background: var(--nb-blue);
+  border-radius: 10px;
+  transform-origin: left center;
+}
+
+@media (max-width: 1024px) {
+  .ngo-charts-grid {
+    grid-template-columns: 1fr;
+  }
+  .ngo-charts-grid .span-2 {
+    grid-column: span 1;
+  }
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 2.5rem;
+}
+
+.dashboard-header h1 {
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.btn-ngo-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
