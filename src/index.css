@@ -148,16 +148,26 @@ body {
 .text-btn:hover { color: var(--nb-purple); }
 
 /* ── Layout Utilities ────────────────────────────────────────── */
-.container   { max-width: 1200px; margin: 0 auto; padding: 0 2rem; width: 100%; }
+.container   { max-width: 1200px; margin: 0 auto; padding: 0 3rem; width: 100%; }
 .flex        { display: flex; }
 .flex-center { display: flex; align-items: center; justify-content: center; }
 .col         { flex-direction: column; }
 .gap-1       { gap: 0.5rem; }
 .gap-2       { gap: 1rem; }
 .gap-3       { gap: 1.5rem; }
+.gap-4       { gap: 2.5rem; }
 .mt-auto     { margin-top: auto; }
+.mt-1       { margin-top: 1rem; }
+.mt-2       { margin-top: 2rem; }
+.p-1 { padding: 0.5rem; }
+.p-2 { padding: 1rem; }
+.p-3 { padding: 1.5rem; }
+.p-4 { padding: 2.5rem; }
+.p-5 { padding: 4rem; }
 .text-center { text-align: center; }
 .w-100       { width: 100%; }
+.justify-between { justify-content: space-between; }
+.align-center { align-items: center; }
 
 /* ── Typography ──────────────────────────────────────────────── */
 h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 900; line-height: 1.1; letter-spacing: -0.04em; }
